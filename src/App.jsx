@@ -7,7 +7,7 @@ import "reset-css";
 import "normalize.css";
 
 import Logo from "@/images/logo-todo.svg";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const GlobalStyles = createGlobalStyle`
     /*============================== Configurations ==============================*/
@@ -94,7 +94,7 @@ const LogoStyled = styled.img`
     margin-left: 1rem;
 `;
 
-const AddTask = styled.div`
+const AddTask = styled.form`
     position: relative;
 
     margin-top: 2rem;
@@ -126,7 +126,7 @@ const TaskInput = styled.input`
     }
 `;
 
-const Add = styled.button`
+const Add = styled.input`
     background-color: var(--add-background);
 
     width: 7.5rem;
@@ -219,16 +219,32 @@ const CloseTask = styled(IoIosClose)`
 export function App() {
     const [tasks, setTasks] = useState(() => {
         const tasks = localStorage.getItem("tasks");
-        console.log(JSON.parse(tasks));
         if(tasks) return JSON.parse(tasks);
         
         return [];
     });
 
+    const taskNameRef = useRef();
+
     useEffect(() => {
         localStorage.setItem("tasks", JSON.stringify(tasks));
     }, [tasks]);
     
+
+    function handleAddTask(event) {
+        event.preventDefault();
+
+        const updatedTasks = [...tasks, {
+            id: crypto.randomUUID(),
+            name: taskNameRef.current.value,
+            isChecked: false,
+        }];
+
+        taskNameRef.current.value = "";
+        taskNameRef.current.focus();
+
+        setTasks(updatedTasks);
+    }
     
     function handleCheckUncheckTask(id) {
         const updatedTasks = tasks.map(task => {
@@ -258,9 +274,9 @@ export function App() {
             <Main>
                 <Title>To-Do List <LogoStyled src={Logo} alt="Logotipo do To-Do" /></Title>
 
-                <AddTask>
-                    <TaskInput type="text" placeholder="Add your text" />
-                    <Add>Add</Add>
+                <AddTask onSubmit={handleAddTask}>
+                    <TaskInput type="text" placeholder="Add your text" minLength="1" required ref={taskNameRef} />
+                    <Add type="submit" value="Add" />
                 </AddTask>
 
                 <TasksList>
