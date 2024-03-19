@@ -51,8 +51,10 @@ const GlobalStyles = createGlobalStyle`
     body {
         background-image: var(--page-gradient);
 
-        width: 100vw;
-        height: 100vh;
+        min-height: 100vh;
+
+        border-top: 1px solid transparent;
+        box-sizing: border-box;
 
         font-family: var(--default-font);
     }
@@ -64,8 +66,7 @@ const Main = styled.main`
     width: 40vw;
     max-width: 30rem;
 
-    margin: auto;
-    margin-top: 10rem;
+    margin: 10rem auto;
     border-radius: 10px;
     box-shadow: 1px 1px 5px 1px var(--black-25-color);
     padding: 2rem 2rem 4rem;
@@ -149,7 +150,7 @@ export function App() {
                 </AddTask>
 
                 <ul>
-
+                    
                 </ul>
             </Main>
         </>
