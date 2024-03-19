@@ -1,15 +1,23 @@
 import styled, { createGlobalStyle } from "styled-components";
+import { BsFillCheckCircleFill } from "react-icons/bs";
+import { IoIosClose } from "react-icons/io";
+import { ImRadioUnchecked } from "react-icons/im";
 
 import "reset-css";
 import "normalize.css";
 
 import Logo from "@/images/logo-todo.svg";
+import { useEffect, useState } from "react";
 
 const GlobalStyles = createGlobalStyle`
     /*============================== Configurations ==============================*/
     :root {
         /*=============== COLORS ===============*/
         --black-25-color: hsl(0, 0%, 0%);
+        --alto-color: hsl(0, 0%, 93%);
+        --alto-60-color: hsla(0, 0%, 93%, 0.6);
+        --red-25-orange-color: hsla(0, 97%, 59%, 0.25);
+        --red-50-orange-color: hsla(0, 97%, 59%, 0.5);
         --outrageous-orange-color: hsl(12, 100%, 61%);
         --outrageous-orange-50-color: hsla(12, 100%, 61%, 0.5);
         --crowshead-color: hsl(37, 57%, 2%);
@@ -27,15 +35,20 @@ const GlobalStyles = createGlobalStyle`
         --main-background: var(--tutu-color);
         --input-background: var(--athens-gray-color);
         --add-background: var(--outrageous-orange-color);
-
-    
+        --close-hover-background: var(--red-25-orange-color);
+        --close-active-background: var(--red-50-orange-color);
+        
+        
         /*=============== BORDERS ===============*/
-    
-    
+        
+        
         /*=============== TEXT COLORS ===============*/
         --title-text-color: var(--blue-zodiac-color);
         --input-placeholder-text-color: var(--gunsmoke-color);
         --add-text-color: var(--early-dawn-color);
+        --checked-icon-text-color: var(--outrageous-orange-color);
+        --unchecked-icon-text-color: var(--athens-gray-color);
+        --checked-name-text-color: var(--gravel-color);
 
     
         /*=============== FONTS ===============*/
@@ -136,7 +149,108 @@ const Add = styled.button`
     }
 `;
 
+const TasksList = styled.ul`
+    margin-top: 2rem;
+`;
+
+const Task = styled.li`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+
+    &:not(:first-child) {
+        margin-top: 1rem;
+    }
+`;
+
+const TaskTextWrapper = styled.span`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    flex-grow: 1;
+
+    border-radius: 20px;
+    padding: 0.25rem;
+
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--alto-60-color);
+    }
+
+    &:active {
+        background-color: var(--alto-color);
+    }
+`;
+
+const CheckedIcon = styled(BsFillCheckCircleFill)`
+    color: var(--checked-icon-text-color);
+    font-size: 2rem;
+    `;
+
+const UncheckedIcon = styled(ImRadioUnchecked)`
+    color: var(--unchecked-icon-text-color);
+    font-size: 2rem;
+`;
+
+const TaskName = styled.span`
+    color: ${props => props.$isChecked ? "var(--checked-name-text-color)" : "inherit"};
+    text-decoration: ${props => props.$isChecked ? "line-through" : "initial"};
+`;
+
+const CloseTask = styled(IoIosClose)`
+    border-radius: 5px;
+    
+    font-size: 2rem;
+
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--close-hover-background);
+    }
+
+    &:active {
+        background-color: var(--close-active-background);
+    }
+`;
+
 export function App() {
+    const [tasks, setTasks] = useState(() => {
+        const tasks = localStorage.getItem("tasks");
+        console.log(JSON.parse(tasks));
+        if(tasks) return JSON.parse(tasks);
+        
+        return [];
+    });
+
+    useEffect(() => {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }, [tasks]);
+    
+    
+    function handleCheckUncheckTask(id) {
+        const updatedTasks = tasks.map(task => {
+            if (task.id === id) {
+                return {
+                    ...task,
+                    isChecked: !task.isChecked,
+                };
+            }
+
+            return task;
+        });
+
+        setTasks(updatedTasks);
+    }
+
+    function handleDeleteTask(id) {
+        const updatedTasks = tasks.filter(task => task.id !== id);
+
+        setTasks(updatedTasks);
+    }
+
     return (
         <>
             <GlobalStyles />
@@ -149,9 +263,20 @@ export function App() {
                     <Add>Add</Add>
                 </AddTask>
 
-                <ul>
-                    
-                </ul>
+                <TasksList>
+                    {tasks.map(task => {
+                        return (
+                            <Task key={task.id}>
+                                <TaskTextWrapper onClick={() => handleCheckUncheckTask(task.id)}>
+                                    {task.isChecked ? <CheckedIcon /> : <UncheckedIcon />}
+                                    <TaskName $isChecked={task.isChecked}>{task.name}</TaskName>
+                                </TaskTextWrapper>
+
+                                <CloseTask onClick={() => handleDeleteTask(task.id)} />
+                            </Task>
+                        );
+                    })}
+                </TasksList>
             </Main>
         </>
     );
